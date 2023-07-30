@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-js-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-js-pod
+  template:
+    metadata:
+      labels:
+        app: api-js-pod
+    spec:
+      containers:
+        - name: api-node-js
+          image: plobon/api-node-js:1.0
+          env:
+            - name: DATABASE_HOST #tem que ser o mesmo nome que o container vai acessar
+              valueFrom: 
+                configMapKeyRef:
+                  name: config-map-database
+                  key: DATABASE_HOST #nome descrito no configmap
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /data-base
+              port: 3000
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 1m
+
+
+
+
+        #      envFrom:
+        # - configMapRef:
+        #     name: db-configmap
